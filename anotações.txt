@@ -1,0 +1,7 @@
+if(dataArray[boi].possuiChifres == true) {
+    area_boi = 0.021 * dataArray[boi].peso ** 0.67 * 1.07
+}
+else {
+    area_boi = 0.021 * dataArray[boi].peso ** 0.67
+}
+    area_total += area_boi

@@ -1,12 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Keyboard, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Keyboard, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from "react-native";
 
 let i = 0
 let area_boi = 0
 
 export default function Page2() {
+
+    const colorScheme = useColorScheme(); // 'light' ou 'dark'
+    const backgroundColor = colorScheme === 'dark' ? 'rgb(255, 221, 182)' : 'rgb(255, 255, 255)';
+    const textColor = colorScheme === 'dark' ? '#fff' : '#000';
 
     const [areaCompleta, setAreaCompleta] = useState(50); // valor inicial
     const [dataArray, setDataArray] = useState([]);
@@ -39,6 +43,14 @@ export default function Page2() {
         area_boi = 0.021 * peso ** 0.67;
       }
   
+      const areaTotalAtual = calcularAreaTotal();
+      const areaDisponivel = qtd - areaTotalAtual;
+
+      if (area_boi > areaDisponivel) {
+        Alert.alert('Sem espaço', 'A área disponível não é suficiente para adicionar este boi.');
+        return;
+      }
+
       console.log(area_boi);
 
       const data = {possuiChifres, peso, area_boi}
@@ -86,7 +98,7 @@ export default function Page2() {
           
           <ScrollView style={{ flex: 1, width: '100%' }} contentContainerStyle={styles.boicardsContainer}>
             {dataArray.map((item, index) => (
-              <View key={index} style={styles.boicard}>
+              <View key={index} style={[styles.boicard, {backgroundColor}]}>
                 
 
                 <Text style={styles.pergunta}>#{index + 1}: {item.peso} Kg {item.possuiChifres ? "(chifres)" : ""} Área {(item.area_boi).toFixed(2)}</Text>
@@ -157,7 +169,7 @@ const styles = StyleSheet.create({
     boicard: {
       width: '95%',
       minHeight: 70,
-      backgroundColor: '#ffffff',
+      //backgroundColor: '#ffffff',
       borderRadius: 10,
       padding: 15,
       alignItems: 'center',

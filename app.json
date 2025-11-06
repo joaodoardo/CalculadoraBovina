@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "calcbov",
+    "name": "CalcBov",
     "slug": "calcbov",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#fad6a2"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.joaodorado.calcbovina"
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +38,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0aac01be-88bb-45fd-8517-8fd7a8dbe4e6"
+      }
     }
   }
 }

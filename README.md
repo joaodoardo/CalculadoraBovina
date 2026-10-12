@@ -1,50 +1,75 @@
-# Welcome to your Expo app 👋
+# CalcBov
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App mobile (Expo / React Native) para planejar a carga de bovinos em caminhões e carretas:
+cadastra o veículo com seus semireboques, andares e gaiolas, e calcula a ocupação de cada
+gaiola conforme o peso dos animais.
 
-## Get started
+## Requisitos
 
-1. Install dependencies
+- Node.js 20+
+- App **Expo Go** (SDK 57) no celular, ou um emulador Android
 
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Como rodar
 
 ```bash
-npm run reset-project
+npm install
+npm start          # abre o Metro; escaneie o QR code com o Expo Go
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Outros scripts:
 
-## Learn more
+| Script              | O que faz                         |
+| ------------------- | --------------------------------- |
+| `npm run android`   | Abre direto no emulador Android   |
+| `npm run web`       | Roda no navegador                 |
+| `npm run lint`      | ESLint (config do Expo)           |
+| `npm run typecheck` | Checagem de tipos do TypeScript   |
 
-To learn more about developing your project with Expo, look at the following resources:
+Build de APK (requer `eas-cli` e login no Expo): `eas build -p android --profile apk`.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Estrutura
 
-## Join the community
+```
+src/
+├── app/                       # Rotas (expo-router). Apenas compõem telas.
+│   ├── _layout.tsx            # Providers globais + Stack
+│   ├── index.tsx              # Lista de veículos
+│   └── veiculos/[id].tsx      # Detalhe do veículo e suas gaiolas
+├── components/ui/             # Componentes genéricos, sem regra de negócio
+├── features/
+│   └── veiculos/              # Tudo do domínio "veículos"
+│       ├── components/        # Componentes da feature (cards, modais, wizard)
+│       ├── context/           # Estado global (VeiculosProvider / useVeiculos)
+│       ├── hooks/             # Lógica de UI reutilizável (wizard de cadastro)
+│       ├── calculos.ts        # Regras de cálculo (área do animal, ocupação)
+│       ├── rascunho.ts        # Validação e montagem do veículo no cadastro
+│       ├── storage.ts         # Persistência local (AsyncStorage)
+│       ├── formatacao.ts      # Textos derivados do domínio
+│       ├── constants.ts
+│       ├── types.ts
+│       └── index.ts           # API pública da feature
+├── theme/cores.ts             # Paleta de cores
+└── utils/numero.ts            # Conversão/formatação numérica (vírgula decimal)
+```
 
-Join our community of developers creating universal apps.
+Convenções:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- **Rotas finas**: arquivos em `src/app` não contêm regra de negócio; importam da feature.
+- **Imports** com o alias `@/` (aponta para `src/`). Rotas importam features por `@/features/veiculos`.
+- **Regras puras** (`calculos.ts`, `rascunho.ts`, `utils/`) não dependem de React e podem ser testadas isoladamente.
+- **Cores** vêm de `@/theme/cores`, nunca hexadecimais soltos.
+- Nomes de domínio em português (veículo, gaiola, semireboque).
+
+## Regras de cálculo
+
+- Área da gaiola: `comprimento × 2,5 m`.
+- Área ocupada por animal: `0,021 × peso^0,67` m², **+7%** se tiver chifres.
+- Um animal só entra na gaiola se couber na área restante.
+- Cores de ocupação: verde < 70% ≤ laranja < 90% ≤ vermelho.
+
+## Persistência
+
+Os veículos ficam salvos no próprio aparelho via AsyncStorage (`src/features/veiculos/storage.ts`),
+na chave `@calcbov/veiculos`, com um número de versão do formato. Ao mudar a estrutura de `Veiculo`,
+incremente `VERSAO_ATUAL` e trate a migração em `carregarVeiculos`. Se os dados salvos estiverem
+ilegíveis, uma cópia é guardada em `@calcbov/veiculos:backup-<timestamp>` antes de seguir com a lista vazia.
